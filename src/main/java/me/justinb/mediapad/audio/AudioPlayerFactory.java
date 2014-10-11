@@ -13,11 +13,9 @@ public class AudioPlayerFactory {
     }
 
     public static AudioPlayer createAudioPlayer(File audioFile) throws IOException, UnsupportedFileException {
-        for(String format : OpusAudioPlayer.getSupportedFormats()) {
-            if(audioFile.getName().endsWith(format)) {
-                return new OpusAudioPlayer(audioFile);
-            }
+        if(OpusAudioPlayer.getSupportedFormats().stream().anyMatch(audioFile.getName()::endsWith)) {
+            return new OpusAudioPlayer(audioFile);
         }
-        throw new UnsupportedFileException(audioFile.getName() + " unsupported audio format.");
+        else throw new UnsupportedFileException(audioFile.getName() + " unsupported audio format.");
     }
 }

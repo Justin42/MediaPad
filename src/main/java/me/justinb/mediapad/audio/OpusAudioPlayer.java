@@ -42,14 +42,7 @@ public class OpusAudioPlayer extends AudioPlayer {
     protected OpusAudioPlayer(File audioFile) throws IOException, UnsupportedFileException {
         super(audioFile);
         // Check for supported format
-        boolean fileSupported = false;
-        for(String format : getSupportedFormats()) {
-            if(audioFile.getName().endsWith(format)) {
-                fileSupported = true;
-                break;
-            }
-        }
-        if(!fileSupported) {
+        if(!getSupportedFormats().stream().anyMatch(audioFile.getName()::endsWith)) {
             throw new UnsupportedFileException(this.getClass().getName() + " does not support this format.");
         }
 
