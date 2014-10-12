@@ -26,11 +26,6 @@ public class AudioTab extends FileTab {
         audioPlayer = AudioPlayerFactory.createAudioPlayer(file);
     }
 
-    @Override
-    public void display() {
-
-    }
-
     public AudioPlayer getAudioPlayer() {
         return audioPlayer;
     }

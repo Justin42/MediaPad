@@ -15,8 +15,6 @@ public abstract class FileTab extends Tab {
         this.filePath = file.getPath();
     }
 
-    public abstract void display();
-
     public String getFilePath() {
         return filePath;
     }

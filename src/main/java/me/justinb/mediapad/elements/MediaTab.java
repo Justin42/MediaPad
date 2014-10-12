@@ -11,9 +11,4 @@ public class MediaTab extends FileTab {
     public MediaTab(String name, File file) throws UnsupportedFileException {
         super(name, file);
     }
-
-    @Override
-    public void display() {
-
-    }
 }

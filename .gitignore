@@ -19,6 +19,7 @@ hs_err_pid*
 
 # native libraries
 lib
+*.dll
 
 # output files
 out

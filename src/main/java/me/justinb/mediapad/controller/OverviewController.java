@@ -8,9 +8,7 @@ import javafx.scene.input.ContextMenuEvent;
 import javafx.stage.DirectoryChooser;
 import me.justinb.mediapad.MediaPad;
 import me.justinb.mediapad.TabManager;
-import me.justinb.mediapad.elements.FilePathTreeItem;
-import me.justinb.mediapad.elements.FileTab;
-import me.justinb.mediapad.elements.ProjectDirectoryContextMenu;
+import me.justinb.mediapad.elements.*;
 import me.justinb.mediapad.exception.UnsupportedFileException;
 
 import java.io.File;
@@ -96,8 +94,8 @@ public class OverviewController extends Controller {
             if (!treeItem.isDirectory()) {
                 mediaTabPane.getTabs().add(TabManager.createTab(treeItem.getValue(), new File(treeItem.getFullPath())));
             }
-        } catch (UnsupportedFileException | IOException e) {
-            e.printStackTrace();
+        } catch (UnsupportedFileException | IOException ex) {
+            MessagePopup.display(PopupType.ERROR, ex.getMessage());
         }
     }
 }
