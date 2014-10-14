@@ -20,7 +20,6 @@ public class TabManager {
                 fileTab = new AudioTab(name, file);
             }
         }
-        if(fileTab == null) throw new UnsupportedFileException(file.getName() + " format not supported.");
-        else return fileTab;
+        return fileTab;
     }
 }
