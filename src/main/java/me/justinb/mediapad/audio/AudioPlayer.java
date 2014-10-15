@@ -6,9 +6,12 @@ import java.io.File;
  * Created by Justin Baldwin on 10/5/2014.
  */
 public abstract class AudioPlayer {
+    enum State {
+        PLAYING, PAUSED, STOPPED
+    }
     protected final File audioFile;
     protected final AudioManager audioManager;
-    protected boolean isPlaying = false;
+    protected State state;
 
     public AudioPlayer(File audioFile) {
         this.audioFile = audioFile;
@@ -21,8 +24,6 @@ public abstract class AudioPlayer {
     }
 
     public abstract boolean play();
-
-    public void stop() {
-        isPlaying = false;
-    }
+    public abstract boolean pause();
+    public abstract boolean stop();
 }

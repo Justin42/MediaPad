@@ -34,6 +34,7 @@ public class OpusAudioPlayer extends AudioPlayer {
     private AudioFormat audioFormat;
     private final ArrayList<OpusHeader> opusHeaders = new ArrayList<>();
     private final ByteBuffer decodeBuffer = ByteBuffer.allocate(BUFFER_SIZE);
+    private SourceDataLine speaker;
 
     public static List<String> getSupportedFormats() {
         return supportedFormats;
@@ -48,10 +49,7 @@ public class OpusAudioPlayer extends AudioPlayer {
 
         // Read headers and initialize decoder
         oggFile = new FileStream(new RandomAccessFile(audioFile, "r"));
-        for (LogicalOggStream stream : oggFile.getLogicalStreams()) {
-            // TODO handle multiple logical streams?
-            opusHeaders.add(OpusHeader.parse(stream.getNextOggPacket(), stream.getNextOggPacket()));
-        }
+        opusHeaders.addAll(readHeaders(oggFile));
         opusState = Opus.decoder_create(INPUT_BITRATE, opusHeaders.get(0).getChannels());
         audioFormat = new AudioFormat(OUTPUT_BITRATE, SAMPLE_SIZE, opusHeaders.get(0).getChannels(), true, false);
     }
@@ -74,18 +72,22 @@ public class OpusAudioPlayer extends AudioPlayer {
 
     @Override
     public boolean play() {
-        if(isPlaying | audioManager.hasOpen()) return false;
+        if(state == State.PLAYING) return false;
         audioManager.getAudioExecutor().execute(() -> {
-            try(SourceDataLine speaker = AudioSystem.getSourceDataLine(audioFormat)){
+            try {
+                if(speaker == null) speaker = AudioSystem.getSourceDataLine(audioFormat);
+                if(!oggFile.isOpen()) oggFile = new FileStream(new RandomAccessFile(audioFile, "r"));
+                if(state == State.STOPPED) readHeaders(oggFile);
+
                 speaker.addLineListener(audioManager);
                 speaker.open();
                 speaker.start();
                 logger.info("Starting audio playback");
                 LogicalOggStream stream = (LogicalOggStream)oggFile.getLogicalStreams().toArray()[0];
                 byte[] nextPacket = stream.getNextOggPacket();
-                isPlaying = true;
+                state = State.PLAYING;
                 logger.info("Beginning decoding...");
-                while(nextPacket != null && isPlaying) {
+                while(nextPacket != null && state == State.PLAYING) {
                     byte[] decodedData = decode(nextPacket);
                     if(decodedData != null) {
                         speaker.write(decodedData, 0, decodedData.length);
@@ -93,19 +95,55 @@ public class OpusAudioPlayer extends AudioPlayer {
                     try { nextPacket = stream.getNextOggPacket();
                     } catch(EndOfOggStreamException eos) {
                         logger.info("Reached end of stream.");
+                        state = State.STOPPED;
                         break;
                     }
                 }
-                logger.info("Finished decoding, closing resources.");
-                speaker.drain();
-                speaker.stop();
-                speaker.close();
-                oggFile.close();
+                if(state == State.STOPPED) {
+                    logger.info("Finished decoding or playback stopped, closing resources.");
+                    stop();
+                }
+                if(state == State.PAUSED) {
+                    logger.info("Audio paused.");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
-                try {oggFile.close();}catch(Exception ignored){};
+                try {oggFile.close(); speaker.close();}catch(Exception ignored){};
             }
         });
+        return true;
+    }
+
+    public ArrayList<OpusHeader> readHeaders(FileStream fileStream) throws IOException {
+        ArrayList<OpusHeader> headers = new ArrayList<>();
+        for (LogicalOggStream stream : fileStream.getLogicalStreams()) {
+            // TODO handle multiple logical streams?
+            opusHeaders.add(OpusHeader.parse(stream.getNextOggPacket(), stream.getNextOggPacket()));
+        }
+        return headers;
+    }
+
+    @Override
+    public boolean pause() {
+        if(state == State.STOPPED) return false;
+        else {
+            state = State.PAUSED;
+            return true;
+        }
+    }
+
+    @Override
+    public boolean stop() {
+        state = State.STOPPED;
+        if(speaker != null) {
+            speaker.stop();
+            speaker.close();
+        }
+        try {
+            oggFile.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return true;
     }
 

@@ -16,6 +16,7 @@ public class AudioTab extends FileTab {
     private static final List<String> supportedFormats = Arrays.asList("opus");
 
     public AudioPlayer audioPlayer;
+    public AudioControls audioControls;
 
     public static List<String> getSupportedFormats() {
         return supportedFormats;
@@ -24,9 +25,13 @@ public class AudioTab extends FileTab {
     public AudioTab(String name, File file) throws IOException, UnsupportedFileException {
         super(name, file);
         audioPlayer = AudioPlayerFactory.createAudioPlayer(file);
+        audioControls = new AudioControls(audioPlayer);
+        setContent(audioControls);
     }
 
     public AudioPlayer getAudioPlayer() {
         return audioPlayer;
     }
+
+    public AudioControls getAudioControls() { return audioControls; }
 }

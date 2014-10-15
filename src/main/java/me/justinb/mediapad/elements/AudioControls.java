@@ -12,13 +12,20 @@ public class AudioControls extends BorderPane {
     private final AudioPlayer audioPlayer;
     private final Button playButton;
     private final Button pauseButton;
+    private final Button stopButton;
     private final HBox hBox;
 
     public AudioControls(AudioPlayer audioPlayer) {
         this.audioPlayer = audioPlayer;
         playButton = new Button("Play");
         pauseButton = new Button("Pause");
-        hBox = new HBox(playButton, pauseButton);
+        stopButton = new Button("Stop");
+
+        stopButton.setOnMouseClicked(event -> audioPlayer.stop());
+        playButton.setOnMouseClicked(event -> audioPlayer.play());
+        pauseButton.setOnMouseClicked(event -> audioPlayer.pause());
+
+        hBox = new HBox(playButton, pauseButton, stopButton);
         setCenter(hBox);
     }
 
