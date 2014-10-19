@@ -11,7 +11,7 @@ public abstract class AudioPlayer {
     }
     protected final File audioFile;
     protected final AudioManager audioManager;
-    protected State state;
+    protected State state = State.STOPPED;
 
     public AudioPlayer(File audioFile) {
         this.audioFile = audioFile;
@@ -23,6 +23,7 @@ public abstract class AudioPlayer {
         return audioFile;
     }
 
+    public abstract void generateWaveform(Waveform waveform);
     public abstract boolean play();
     public abstract boolean pause();
     public abstract boolean stop();

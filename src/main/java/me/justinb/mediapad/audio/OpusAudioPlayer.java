@@ -3,6 +3,7 @@ package me.justinb.mediapad.audio;
 import de.jarnbjo.ogg.EndOfOggStreamException;
 import de.jarnbjo.ogg.FileStream;
 import de.jarnbjo.ogg.LogicalOggStream;
+import de.jarnbjo.ogg.OggFormatException;
 import me.justinb.mediapad.exception.UnsupportedFileException;
 import org.jitsi.impl.neomedia.codec.audio.opus.Opus;
 
@@ -10,6 +11,7 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.SourceDataLine;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -52,6 +54,30 @@ public class OpusAudioPlayer extends AudioPlayer {
         opusHeaders.addAll(readHeaders(oggFile));
         opusState = Opus.decoder_create(INPUT_BITRATE, opusHeaders.get(0).getChannels());
         audioFormat = new AudioFormat(OUTPUT_BITRATE, SAMPLE_SIZE, opusHeaders.get(0).getChannels(), true, false);
+    }
+
+    @Override
+    public void generateWaveform(Waveform waveform) {
+        if(state != State.STOPPED) return;
+        try {
+            oggFile = new FileStream(new RandomAccessFile(audioFile, "r"));
+            readHeaders(oggFile);
+            LogicalOggStream stream = (LogicalOggStream)oggFile.getLogicalStreams().toArray()[0];
+            double maxFrames = waveform.getWidth() / waveform.getPixelsPerSample();
+            double frameCount = 0;
+            byte[] nextFrame = stream.getNextOggPacket();
+            while(nextFrame != null && frameCount < maxFrames) {
+                waveform.addFrame(nextFrame);
+                nextFrame = stream.getNextOggPacket();
+                frameCount++;
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (OggFormatException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private byte[] decode(byte[] packetData) {

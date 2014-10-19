@@ -2,6 +2,7 @@ package me.justinb.mediapad.elements;
 
 import me.justinb.mediapad.audio.AudioPlayer;
 import me.justinb.mediapad.audio.AudioPlayerFactory;
+import me.justinb.mediapad.audio.Waveform;
 import me.justinb.mediapad.exception.UnsupportedFileException;
 
 import java.io.File;
@@ -27,6 +28,15 @@ public class AudioTab extends FileTab {
         audioPlayer = AudioPlayerFactory.createAudioPlayer(file);
         audioControls = new AudioControls(audioPlayer);
         setContent(audioControls);
+        displayWaveform();
+    }
+
+    public void displayWaveform() {
+        Waveform waveform = new Waveform(600, 200, 1, 5);
+        audioPlayer.generateWaveform(waveform);
+        WaveformDisplay waveformDisplay = new WaveformDisplay(waveform.getWidth(), waveform.getheight());
+        waveformDisplay.displayWaveform(waveform);
+        audioControls.setTop(waveformDisplay);
     }
 
     public AudioPlayer getAudioPlayer() {

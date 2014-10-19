@@ -11,8 +11,6 @@ import java.io.IOException;
  * Created by Justin Baldwin on 10/11/2014.
  */
 public class TabManager {
-    public static TabManager instance;
-
     public static FileTab createTab(String name, File file) throws UnsupportedFileException, IOException {
         FileTab fileTab = null;
         for(String format : AudioTab.getSupportedFormats()) {
